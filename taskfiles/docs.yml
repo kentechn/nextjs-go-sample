@@ -1,0 +1,33 @@
+version: "3"
+
+# Redocly CLI (https://redocly.com/docs/cli) で OpenAPI を検証・可視化する。
+vars:
+  SPEC: openapi/openapi.yaml
+  OUT: docs/api.html
+
+tasks:
+  lint:
+    desc: Redocly のルールセットで OpenAPI を lint
+    cmds:
+      - pnpm exec redocly lint
+
+  build:
+    desc: Redoc の静的 HTML ドキュメントを生成
+    cmds:
+      - pnpm exec redocly build-docs {{.SPEC}} --output {{.OUT}}
+
+  preview:
+    desc: 生成した HTML ドキュメントをローカルで配信 (:4000)
+    deps: [build]
+    cmds:
+      - python3 -m http.server 4000 --directory docs
+
+  bundle:
+    desc: 参照を解決した単一ファイルの仕様を出力
+    cmds:
+      - pnpm exec redocly bundle {{.SPEC}} --output docs/openapi.bundled.yaml
+
+  stats:
+    desc: 仕様の統計情報を表示
+    cmds:
+      - pnpm exec redocly stats {{.SPEC}}

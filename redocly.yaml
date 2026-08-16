@@ -1,0 +1,21 @@
+# Redocly CLI (https://redocly.com/docs/cli) の設定。
+# `redocly lint` は apis に定義された仕様をすべて検証する。
+apis:
+  todo@v1:
+    root: openapi/openapi.yaml
+    # openapi-typescript も同じ設定を読み、この出力先に型を生成する。
+    x-openapi-ts:
+      output: apps/web/src/lib/api/schema.gen.ts
+
+extends:
+  - recommended
+
+rules:
+  # 認証はまだ導入していないため security の定義は必須にしない。
+  security-defined: off
+  # エラー応答は default レスポンス (components/responses/Error) に集約している。
+  operation-4xx-response: off
+  info-license: off
+  tag-description: off
+  # ローカル開発用の servers エントリを許容する。
+  no-server-example.com: off

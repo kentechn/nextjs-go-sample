@@ -1,0 +1,28 @@
+{
+  "name": "nextjs-go-sample",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "typecheck": "pnpm --filter web typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "gen:api": "openapi-typescript",
+    "storybook": "pnpm --filter web storybook",
+    "build-storybook": "pnpm --filter web build-storybook",
+    "e2e": "pnpm --filter e2e test",
+    "docs:lint": "redocly lint",
+    "docs:build": "redocly build-docs openapi/openapi.yaml --output docs/api.html"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.8",
+    "@redocly/cli": "2.46.0",
+    "openapi-typescript": "7.13.0"
+  }
+}

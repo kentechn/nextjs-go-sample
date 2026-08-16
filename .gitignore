@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+
+# build output
+build/
+dist/
+bin/
+apps/api/tmp/
+
+# storybook
+storybook-static/
+
+# playwright
+playwright-report/
+test-results/
+e2e/.auth/
+blob-report/
+
+# go
+*.test
+coverage.out
+
+# env
+.env
+.env.*
+!.env.example
+
+# docker / docs
+.buildx-cache/
+docs/api.html
+docs/openapi.bundled.yaml
+
+# misc
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+*.log

@@ -1,0 +1,214 @@
+version: "3"
+
+# アプリ（web / api / e2e / docker）のタスク。OpenAPI 関連は taskfiles/docs.yml。
+vars:
+  # レイヤキャッシュのエクスポートには docker-container ドライバが必要。
+  BUILDER: nextjs-go-sample
+  BAKE: docker buildx bake --builder {{.BUILDER}} --file docker-bake.hcl
+
+env:
+  GOTOOLCHAIN: local
+
+tasks:
+  setup:
+    desc: 依存関係をインストール（pnpm + go mod）
+    cmds:
+      - pnpm install
+      - task: api:setup
+
+  gen:
+    desc: OpenAPI から Go / TypeScript の型を生成
+    cmds:
+      - task: api:gen
+      - task: web:gen
+
+  dev:
+    desc: api (:8080) と web (:3000) をホットリロードで起動
+    deps:
+      - api:dev
+      - web:dev
+
+  build:
+    desc: api + web をビルド
+    cmds:
+      - task: api:build
+      - task: web:build
+
+  lint:
+    desc: biome + golangci-lint
+    cmds:
+      - task: web:lint
+      - task: api:lint
+
+  fmt:
+    desc: biome + gofmt で自動修正
+    cmds:
+      - task: web:fmt
+      - task: api:fmt
+
+  test:
+    desc: 型チェック + Go テスト
+    cmds:
+      - task: web:typecheck
+      - task: api:test
+
+  # --- web (Next.js) ---
+
+  web:dev:
+    desc: Next.js dev サーバ (:3000)
+    cmds:
+      - pnpm --filter web dev
+
+  web:build:
+    desc: Next.js を本番ビルド（standalone）
+    cmds:
+      - pnpm --filter web build
+
+  web:start:
+    desc: ビルド済みの Next.js を起動
+    cmds:
+      - pnpm --filter web start
+
+  web:gen:
+    desc: openapi-typescript で API 型を生成
+    cmds:
+      - pnpm run gen:api
+
+  web:lint:
+    desc: Biome で lint / format チェック
+    cmds:
+      - pnpm run lint
+
+  web:fmt:
+    desc: Biome で自動修正
+    cmds:
+      - pnpm run lint:fix
+
+  web:typecheck:
+    desc: tsc による型チェック
+    cmds:
+      - pnpm run typecheck
+
+  storybook:
+    desc: Storybook (:6006)
+    cmds:
+      - pnpm --filter web storybook
+
+  storybook:build:
+    desc: Storybook を静的ビルド
+    cmds:
+      - pnpm run build-storybook
+
+  # --- api (Go) ---
+
+  api:setup:
+    desc: Go の依存を取得
+    dir: apps/api
+    cmds:
+      - go mod download
+
+  api:dev:
+    desc: air でホットリロード起動 (:8080)
+    dir: apps/api
+    cmds:
+      - go tool air -c .air.toml
+
+  api:run:
+    desc: API をそのまま起動 (:8080)
+    dir: apps/api
+    cmds:
+      - go run ./cmd/api
+
+  api:build:
+    desc: API バイナリをビルド
+    dir: apps/api
+    cmds:
+      - go build -o bin/api ./cmd/api
+
+  api:gen:
+    desc: oapi-codegen で Go の型とサーバ IF を生成
+    dir: apps/api
+    cmds:
+      - go generate ./...
+
+  api:test:
+    desc: Go のテスト
+    dir: apps/api
+    cmds:
+      - go test -race ./...
+
+  api:lint:
+    desc: golangci-lint
+    dir: apps/api
+    cmds:
+      - golangci-lint run ./...
+
+  api:fmt:
+    desc: gofmt
+    dir: apps/api
+    cmds:
+      - go fmt ./...
+
+  # --- e2e (Playwright) ---
+
+  e2e:install:
+    desc: Playwright のブラウザを取得
+    cmds:
+      - pnpm --filter e2e exec playwright install --with-deps chromium
+
+  e2e:
+    desc: Playwright の E2E テスト（api / web は自動起動）
+    cmds:
+      - pnpm --filter e2e test
+
+  e2e:ui:
+    desc: Playwright UI モード
+    cmds:
+      - pnpm --filter e2e test:ui
+
+  e2e:report:
+    desc: 直近の Playwright レポートを表示
+    cmds:
+      - pnpm --filter e2e report
+
+  # --- docker ---
+
+  docker:builder:
+    desc: buildx のビルダー(docker-container)を用意
+    status:
+      - docker buildx inspect {{.BUILDER}} >/dev/null 2>&1
+    cmds:
+      - docker buildx create --name {{.BUILDER}} --driver docker-container --bootstrap
+
+  docker:build:
+    desc: buildx bake で本番イメージをビルド（ローカルキャッシュ利用）
+    deps: [docker:builder]
+    cmds:
+      - "{{.BAKE}} {{.CLI_ARGS}}"
+
+  docker:build:api:
+    desc: API イメージのみビルド
+    deps: [docker:builder]
+    cmds:
+      - "{{.BAKE}} api {{.CLI_ARGS}}"
+
+  docker:build:web:
+    desc: Web イメージのみビルド
+    deps: [docker:builder]
+    cmds:
+      - "{{.BAKE}} web {{.CLI_ARGS}}"
+
+  docker:up:
+    desc: compose でホットリロード付きの開発環境を起動
+    cmds:
+      - docker compose up --build {{.CLI_ARGS}}
+
+  docker:down:
+    desc: 開発環境を停止してボリュームも削除
+    cmds:
+      - docker compose down -v
+
+  docker:logs:
+    desc: compose のログを表示
+    cmds:
+      - docker compose logs -f {{.CLI_ARGS}}

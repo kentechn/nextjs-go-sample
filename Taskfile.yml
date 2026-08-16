@@ -1,0 +1,64 @@
+version: "3"
+
+includes:
+  app: taskfiles/app.yml
+  docs: taskfiles/docs.yml
+
+tasks:
+  default:
+    desc: タスク一覧を表示
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: 依存関係をインストール
+    cmds:
+      - task: app:setup
+
+  gen:
+    desc: openapi/openapi.yaml から Go / TypeScript のコードを生成
+    cmds:
+      - task: app:gen
+
+  gen:check:
+    desc: 生成物が仕様と同期しているか検証
+    cmds:
+      - task: gen
+      - git diff --exit-code -- apps/api/internal/openapi apps/web/src/lib/api/schema.gen.ts
+
+  dev:
+    desc: api (:8080) と web (:3000) をホットリロードで起動
+    cmds:
+      - task: app:dev
+
+  build:
+    desc: api + web をビルド
+    cmds:
+      - task: app:build
+
+  lint:
+    desc: すべての lint を実行（biome / golangci-lint / redocly）
+    cmds:
+      - task: app:lint
+      - task: docs:lint
+
+  fmt:
+    desc: すべてのフォーマッタを実行
+    cmds:
+      - task: app:fmt
+
+  test:
+    desc: ユニットテスト + 型チェック
+    cmds:
+      - task: app:test
+
+  e2e:
+    desc: Playwright の E2E テスト
+    cmds:
+      - task: app:e2e
+
+  clean:
+    desc: ビルド成果物を削除
+    cmds:
+      - rm -rf apps/web/.next apps/web/storybook-static apps/api/bin apps/api/tmp docs/api.html docs/openapi.bundled.yaml e2e/playwright-report e2e/test-results
