@@ -46,7 +46,7 @@ apps/api/
       dto.go                       入出力の型（層をまたぐデータの受け渡し）
     infrastructure/memory/
       todo_repository.go           Repository のインメモリ実装（mutex + map）
-    presentation/http/
+    presentation/rest/
       router.go                    chi、ミドルウェア、CORS、OpenAPI リクエスト検証
       handler.go                   openapi.StrictServerInterface の実装
       mapper.go                    domain / usecase の型 ⇄ 生成型の変換
@@ -141,7 +141,7 @@ POST /todos
   → chi ミドルウェア（RequestID / Logger / Recoverer / CORS）
   → OpenAPI リクエスト検証ミドルウェア（仕様違反は 400 で打ち返す）
   → 生成された strict handler（型付きの Request オブジェクトに変換）
-  → presentation/http.Handler.CreateTodo
+  → presentation/rest.Handler.CreateTodo
   → usecase/todo.UseCase.Create
   → domain/todo.New（不変条件の検査）
   → domain/todo.Repository.Create → infrastructure/memory
@@ -184,5 +184,7 @@ domain がエラーの語彙を持ち、presentation が HTTP に翻訳する。
 - **strict server を使う**: 仕様を実装しない限りコンパイルが通らないという性質が、仕様ファーストの担保になる。
 - **DTO を層ごとに分ける**: presentation が生成型を、usecase が入出力型を、domain がエンティティを持つ。
   変換コードは増えるが、仕様変更の影響範囲が presentation に閉じる。
+- **presentation のパッケージ名は `rest`**: ディレクトリを `presentation/http` にすると
+  パッケージ名が `net/http` と衝突して import 別名が必要になるため、`rest` にしている。
 - **リポジトリのインターフェースは domain に置く**（usecase ではなく）:
   リポジトリが扱うのはエンティティと集約の永続化であり、語彙は domain に属するため。

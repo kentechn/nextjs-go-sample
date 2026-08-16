@@ -16,7 +16,7 @@ env:
 
 jobs:
   frontend:
-    name: Frontend (biome / typecheck / build / storybook)
+    name: Frontend (biome / typecheck / vitest / build / storybook)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -31,6 +31,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: task app:web:lint
       - run: task app:web:typecheck
+      - run: task app:web:test
       - run: task app:web:build
       - run: task app:storybook:build
 

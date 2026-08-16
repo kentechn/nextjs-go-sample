@@ -1,4 +1,4 @@
-import type { Todo } from "@/lib/api/todo";
+import type { Todo } from "../types";
 
 type TodoListProps = {
   todos: Todo[];

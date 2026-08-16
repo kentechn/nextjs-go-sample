@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { TodoList } from "./TodoList";
 
 const meta = {
-  title: "todo/TodoList",
+  title: "todos/TodoList",
   component: TodoList,
   parameters: { layout: "centered" },
 } satisfies Meta<typeof TodoList>;

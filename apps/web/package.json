@@ -8,7 +8,8 @@
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@swc/helpers": "0.5.23",
@@ -28,7 +29,8 @@
     "@types/react-dom": "^19",
     "storybook": "^10.5.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.1.10"
   },
   "packageManager": "pnpm@11.22.0"
 }

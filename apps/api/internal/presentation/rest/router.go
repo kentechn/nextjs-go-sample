@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type Config struct {
 
 // NewRouter builds the HTTP handler: request validation against the embedded
 // spec runs before any handler, so invalid requests never reach the domain.
-func NewRouter(srv *Server, cfg Config) (http.Handler, error) {
+func NewRouter(handler *Handler, cfg Config) (http.Handler, error) {
 	spec, err := openapi.GetSpec()
 	if err != nil {
 		return nil, fmt.Errorf("load openapi spec: %w", err)
@@ -39,23 +39,23 @@ func NewRouter(srv *Server, cfg Config) (http.Handler, error) {
 			_ *http.Request,
 			opts nethttpmiddleware.ErrorHandlerOpts,
 		) {
-			ErrorResponse(w, opts.StatusCode, "invalid_request", err.Error())
+			ErrorResponse(w, opts.StatusCode, codeInvalidRequest, err.Error())
 		},
 	}))
 
-	handler := openapi.NewStrictHandlerWithOptions(srv, nil, openapi.StrictHTTPServerOptions{
+	strict := openapi.NewStrictHandlerWithOptions(handler, nil, openapi.StrictHTTPServerOptions{
 		RequestErrorHandlerFunc: func(w http.ResponseWriter, _ *http.Request, err error) {
-			ErrorResponse(w, http.StatusBadRequest, "invalid_request", err.Error())
+			ErrorResponse(w, http.StatusBadRequest, codeInvalidRequest, err.Error())
 		},
 		ResponseErrorHandlerFunc: func(w http.ResponseWriter, _ *http.Request, err error) {
-			ErrorResponse(w, http.StatusInternalServerError, "internal", err.Error())
+			ErrorResponse(w, http.StatusInternalServerError, codeInternal, err.Error())
 		},
 	})
 
-	return openapi.HandlerWithOptions(handler, openapi.ChiServerOptions{
+	return openapi.HandlerWithOptions(strict, openapi.ChiServerOptions{
 		BaseRouter: router,
 		ErrorHandlerFunc: func(w http.ResponseWriter, _ *http.Request, err error) {
-			ErrorResponse(w, http.StatusBadRequest, "invalid_request", err.Error())
+			ErrorResponse(w, http.StatusBadRequest, codeInvalidRequest, err.Error())
 		},
 	}), nil
 }

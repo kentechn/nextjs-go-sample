@@ -5,7 +5,7 @@ apis:
     root: openapi/openapi.yaml
     # openapi-typescript も同じ設定を読み、この出力先に型を生成する。
     x-openapi-ts:
-      output: apps/web/src/lib/api/schema.gen.ts
+      output: apps/web/src/shared/api/schema.gen.ts
 
 extends:
   - recommended

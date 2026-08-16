@@ -25,7 +25,7 @@ tasks:
     desc: 生成物が仕様と同期しているか検証
     cmds:
       - task: gen
-      - git diff --exit-code -- apps/api/internal/openapi apps/web/src/lib/api/schema.gen.ts
+      - git diff --exit-code -- apps/api/internal/openapi apps/web/src/shared/api/schema.gen.ts
 
   dev:
     desc: api (:8080) と web (:3000) をホットリロードで起動
