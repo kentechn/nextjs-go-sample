@@ -29,10 +29,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: task web:lint
-      - run: task web:typecheck
-      - run: task web:build
-      - run: task web:storybook:build
+      - run: task app:web:lint
+      - run: task app:web:typecheck
+      - run: task app:web:build
+      - run: task app:storybook:build
 
   backend:
     name: Backend (golangci-lint / test / build)
@@ -46,8 +46,8 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: apps/api/go.sum
-      - run: task api:build
-      - run: task api:test
+      - run: task app:api:build
+      - run: task app:api:test
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12.2
@@ -132,9 +132,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: task e2e:install
-      - run: task web:build
-      - run: task e2e:test
+      - run: task app:e2e:install
+      - run: task app:web:build
+      - run: task app:e2e
       - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
         with:

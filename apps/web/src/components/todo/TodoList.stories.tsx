@@ -23,7 +23,7 @@ export const Default: Story = {
       },
       {
         id: "1f4a1a54-4a1e-4f3a-9f1a-1b2c3d4e5f61",
-        title: "make dev を実行する",
+        title: "task dev を実行する",
         done: true,
         createdAt: "2026-01-02T00:00:00Z",
       },

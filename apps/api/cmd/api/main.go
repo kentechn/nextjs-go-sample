@@ -36,7 +36,7 @@ func main() {
 func run(logger *slog.Logger) error {
 	store := todo.NewStore()
 	store.Create("read the OpenAPI spec")
-	store.Create("run make dev")
+	store.Create("run task dev")
 
 	handler, err := server.NewRouter(server.New(store, version), server.Config{
 		AllowedOrigins: splitAndTrim(env("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),

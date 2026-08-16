@@ -31,7 +31,9 @@ apps/api                     Go API
   internal/server            生成 IF の実装（StrictServerInterface）
   internal/todo              ドメイン / ストア（インメモリ）
 e2e                          Playwright テスト
-Taskfile.yml / taskfiles/     task コマンドの定義（api / web / docs / docker / e2e に分割）
+Taskfile.yml                 task コマンドの入口
+taskfiles/app.yml            アプリ（web / api / e2e / docker）のタスク
+taskfiles/docs.yml           OpenAPI（Redocly）のタスク
 docker-bake.hcl              buildx bake の定義（本番イメージ）
 compose.yaml                 ローカル開発（ホットリロード）
 ```
@@ -52,31 +54,31 @@ task --list-all     # 全タスク一覧
 ローカル実行:
 
 ```bash
-task dev            # API (:8080, air) と Web (:3000, next dev) を同時起動
-task api:dev
-task web:dev
-task web:storybook  # http://localhost:6006
+task dev              # API (:8080, air) と Web (:3000, next dev) を同時起動
+task app:api:dev
+task app:web:dev
+task app:storybook    # http://localhost:6006
 ```
 
 Docker（ホットリロード付き）:
 
 ```bash
-task docker:up      # api は air、web は next dev。ソースはバインドマウント
-task docker:logs
-task docker:down
+task app:docker:up    # api は air、web は next dev。ソースはバインドマウント
+task app:docker:logs
+task app:docker:down
 ```
 
 本番イメージ（マルチステージ + buildx キャッシュ）:
 
 ```bash
-task docker:build       # docker buildx bake（api + web）
-task docker:build:api
-task docker:build:web
+task app:docker:build       # docker buildx bake（api + web）
+task app:docker:build:api
+task app:docker:build:web
 ```
 
 - `apps/api/Dockerfile`: `deps`（go.mod/go.sum のみ先にコピー）→ `build`（BuildKit の module/build キャッシュマウント）→ `runtime`（distroless static, nonroot, 約 12MB）。`dev` ステージは air。
 - `apps/web/Dockerfile`: `deps`（package.json / lockfile のみ先にコピー、pnpm store をキャッシュマウント）→ `build`（Next.js standalone）→ `runtime`（standalone のみをコピー）。`dev` ステージは next dev。
-- `docker-bake.hcl` はレイヤキャッシュを `.buildx-cache/` に import/export する。キャッシュのエクスポートには docker-container ドライバが必要なので、`task docker:build` が専用ビルダーを自動作成する。
+- `docker-bake.hcl` はレイヤキャッシュを `.buildx-cache/` に import/export する。キャッシュのエクスポートには docker-container ドライバが必要なので、`task app:docker:build` が専用ビルダーを自動作成する。
 
 ## API ドキュメント（Redocly）
 
@@ -106,7 +108,7 @@ CI の `codegen` ジョブが「生成物が仕様と一致しているか」を
 task lint           # biome + golangci-lint + redocly lint
 task fmt            # 自動修正
 task test           # tsc --noEmit + go test
-task e2e:test       # Playwright（api/web を自動起動）
+task e2e            # Playwright（api/web を自動起動）
 task build
 task gen:check
 task clean

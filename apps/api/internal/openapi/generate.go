@@ -1,6 +1,6 @@
 // Package openapi contains the code generated from openapi/openapi.yaml.
 //
-// Run `make gen` (or `go generate ./...`) after editing the spec; never edit
+// Run `task gen` (or `go generate ./...`) after editing the spec; never edit
 // api.gen.go by hand.
 package openapi
 
