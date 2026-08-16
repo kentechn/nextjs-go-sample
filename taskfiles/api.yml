@@ -1,0 +1,46 @@
+version: "3"
+
+# `dir: apps/api` で読み込まれるため、各コマンドは apps/api 上で実行される。
+env:
+  GOTOOLCHAIN: local
+
+tasks:
+  setup:
+    desc: Go の依存とツールを取得
+    cmds:
+      - go mod download
+
+  dev:
+    desc: air でホットリロード起動 (:8080)
+    cmds:
+      - go tool air -c .air.toml
+
+  run:
+    desc: API をそのまま起動 (:8080)
+    cmds:
+      - go run ./cmd/api
+
+  build:
+    desc: API バイナリをビルド
+    cmds:
+      - go build -o bin/api ./cmd/api
+
+  gen:
+    desc: oapi-codegen で Go の型とサーバ IF を生成
+    cmds:
+      - go generate ./...
+
+  test:
+    desc: Go のテスト
+    cmds:
+      - go test -race ./...
+
+  lint:
+    desc: golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  fmt:
+    desc: gofmt
+    cmds:
+      - go fmt ./...

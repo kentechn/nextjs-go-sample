@@ -1,0 +1,50 @@
+name: nextjs-go-sample
+
+# ローカル開発用。ソースをバインドマウントし、api は air / web は next dev でホットリロードする。
+services:
+  api:
+    build:
+      context: apps/api
+      target: dev
+    environment:
+      PORT: "8080"
+      ALLOWED_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+    volumes:
+      - ./apps/api:/src
+      - go-mod:/go/pkg/mod
+      - go-build:/root/.cache/go-build
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    environment:
+      API_BASE_URL: http://api:8080
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./openapi:/app/openapi
+      - web-node-modules:/app/node_modules
+      - web-app-node-modules:/app/apps/web/node_modules
+      - web-next:/app/apps/web/.next
+
+volumes:
+  go-mod:
+  go-build:
+  web-node-modules:
+  web-app-node-modules:
+  web-next:

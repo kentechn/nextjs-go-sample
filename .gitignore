@@ -30,6 +30,11 @@ coverage.out
 .env.*
 !.env.example
 
+# docker / docs
+.buildx-cache/
+docs/api.html
+docs/openapi.bundled.yaml
+
 # misc
 .DS_Store
 *.tsbuildinfo

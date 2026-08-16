@@ -1,0 +1,71 @@
+version: "3"
+
+includes:
+  api:
+    taskfile: taskfiles/api.yml
+    dir: apps/api
+  web: taskfiles/web.yml
+  docs: taskfiles/docs.yml
+  docker: taskfiles/docker.yml
+  e2e: taskfiles/e2e.yml
+
+tasks:
+  default:
+    desc: タスク一覧を表示
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: 依存関係をインストール
+    cmds:
+      - pnpm install
+      - task: api:setup
+
+  gen:
+    desc: openapi/openapi.yaml から Go / TypeScript のコードを生成
+    cmds:
+      - task: api:gen
+      - task: web:gen
+
+  gen:check:
+    desc: 生成物が仕様と同期しているか検証
+    cmds:
+      - task: gen
+      - git diff --exit-code -- apps/api/internal/openapi apps/web/src/lib/api/schema.gen.ts
+
+  dev:
+    desc: api + web をホットリロードで起動
+    deps:
+      - api:dev
+      - web:dev
+
+  build:
+    desc: api + web をビルド
+    cmds:
+      - task: api:build
+      - task: web:build
+
+  lint:
+    desc: すべての lint を実行
+    cmds:
+      - task: web:lint
+      - task: api:lint
+      - task: docs:lint
+
+  fmt:
+    desc: すべてのフォーマッタを実行
+    cmds:
+      - task: web:fmt
+      - task: api:fmt
+
+  test:
+    desc: ユニットテスト + 型チェック
+    cmds:
+      - task: web:typecheck
+      - task: api:test
+
+  clean:
+    desc: ビルド成果物を削除
+    cmds:
+      - rm -rf apps/web/.next apps/web/storybook-static apps/api/bin apps/api/tmp docs/api.html e2e/playwright-report e2e/test-results

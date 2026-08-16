@@ -13,13 +13,16 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "gen:api": "openapi-typescript openapi/openapi.yaml -o apps/web/src/lib/api/schema.gen.ts",
+    "gen:api": "openapi-typescript",
     "storybook": "pnpm --filter web storybook",
     "build-storybook": "pnpm --filter web build-storybook",
-    "e2e": "pnpm --filter e2e test"
+    "e2e": "pnpm --filter e2e test",
+    "docs:lint": "redocly lint",
+    "docs:build": "redocly build-docs openapi/openapi.yaml --output docs/api.html"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.8",
+    "@redocly/cli": "2.46.0",
     "openapi-typescript": "7.13.0"
   }
 }

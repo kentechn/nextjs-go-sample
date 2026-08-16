@@ -12,6 +12,7 @@ concurrency:
 env:
   NODE_VERSION: "22"
   GO_VERSION: "1.26.6"
+  TASK_VERSION: "3.52.0"
 
 jobs:
   frontend:
@@ -19,41 +20,72 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: go-task/setup-task@v2
+        with:
+          version: ${{ env.TASK_VERSION }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run lint
-      - run: pnpm run typecheck
-      - run: pnpm run build
-      - run: pnpm run build-storybook
+      - run: task web:lint
+      - run: task web:typecheck
+      - run: task web:build
+      - run: task web:storybook:build
 
   backend:
     name: Backend (golangci-lint / test / build)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/api
     steps:
       - uses: actions/checkout@v6
+      - uses: go-task/setup-task@v2
+        with:
+          version: ${{ env.TASK_VERSION }}
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: apps/api/go.sum
-      - run: go build ./...
-      - run: go test -race ./...
+      - run: task api:build
+      - run: task api:test
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12.2
           working-directory: apps/api
+
+  docs:
+    name: OpenAPI (redocly lint / build-docs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: go-task/setup-task@v2
+        with:
+          version: ${{ env.TASK_VERSION }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: task docs:lint
+      - run: task docs:build
+      - run: task docs:bundle
+      - uses: actions/upload-artifact@v5
+        with:
+          name: openapi-docs
+          path: |
+            docs/api.html
+            docs/openapi.bundled.yaml
+          retention-days: 7
 
   codegen:
     name: Codegen is up to date
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: go-task/setup-task@v2
+        with:
+          version: ${{ env.TASK_VERSION }}
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -64,15 +96,32 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: make gen
-      - name: Fail if generated code differs from the spec
-        run: git diff --exit-code
+      - run: task gen:check
+
+  docker:
+    name: Docker images (buildx)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+      - name: Build api / web images
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          targets: api,web
+          set: |
+            *.output=type=cacheonly
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
 
   e2e:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: go-task/setup-task@v2
+        with:
+          version: ${{ env.TASK_VERSION }}
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -83,9 +132,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter e2e exec playwright install --with-deps chromium
-      - run: pnpm run build
-      - run: pnpm run e2e
+      - run: task e2e:install
+      - run: task web:build
+      - run: task e2e:test
       - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
         with:

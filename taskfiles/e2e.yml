@@ -1,0 +1,22 @@
+version: "3"
+
+tasks:
+  install:
+    desc: Playwright のブラウザを取得
+    cmds:
+      - pnpm --filter e2e exec playwright install --with-deps chromium
+
+  test:
+    desc: Playwright の E2E テスト（サーバは自動起動）
+    cmds:
+      - pnpm --filter e2e test
+
+  ui:
+    desc: Playwright UI モード
+    cmds:
+      - pnpm --filter e2e test:ui
+
+  report:
+    desc: 直近のレポートを表示
+    cmds:
+      - pnpm --filter e2e report
