@@ -73,6 +73,21 @@ func TestCreateTodoRejectsInvalidBody(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
+// Path parameters that cannot be parsed are reported in the spec error shape.
+func TestGetTodoRejectsMalformedID(t *testing.T) {
+	t.Parallel()
+
+	rec := httptest.NewRecorder()
+	newTestHandler(t).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/todos/not-a-uuid", nil))
+
+	require.Equal(t, http.StatusBadRequest, rec.Code)
+	require.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+
+	var body openapi.Error
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+	require.Equal(t, "invalid_request", body.Code)
+}
+
 func TestGetTodoNotFound(t *testing.T) {
 	t.Parallel()
 

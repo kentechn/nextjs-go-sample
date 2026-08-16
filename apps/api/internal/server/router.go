@@ -52,7 +52,12 @@ func NewRouter(srv *Server, cfg Config) (http.Handler, error) {
 		},
 	})
 
-	return openapi.HandlerFromMux(handler, router), nil
+	return openapi.HandlerWithOptions(handler, openapi.ChiServerOptions{
+		BaseRouter: router,
+		ErrorHandlerFunc: func(w http.ResponseWriter, _ *http.Request, err error) {
+			ErrorResponse(w, http.StatusBadRequest, "invalid_request", err.Error())
+		},
+	}), nil
 }
 
 func corsMiddleware(allowedOrigins []string) func(http.Handler) http.Handler {

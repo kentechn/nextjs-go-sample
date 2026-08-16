@@ -34,3 +34,17 @@ export const Default: Story = {
 export const Empty: Story = {
   args: { todos: [] },
 };
+
+export const LongTitle: Story = {
+  args: {
+    todos: [
+      {
+        id: "2f4a1a54-4a1e-4f3a-9f1a-1b2c3d4e5f62",
+        title: "あ".repeat(200),
+        done: false,
+        createdAt: "2026-01-03T00:00:00Z",
+      },
+    ],
+    onDelete: () => {},
+  },
+};
