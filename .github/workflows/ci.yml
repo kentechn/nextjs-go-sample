@@ -73,9 +73,7 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: openapi-docs
-          path: |
-            docs/api.html
-            docs/openapi.bundled.yaml
+          path: docs/api
           retention-days: 7
 
   codegen:

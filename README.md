@@ -3,6 +3,15 @@
 Next.js (SSR) + Go のモノレポ。HTTP の契約は `openapi/openapi.yaml` が唯一の真実で、
 フロント/バックの型は両方そこから自動生成する（生成物は手で編集しない）。
 
+## ドキュメント
+
+| ドキュメント | 内容 |
+| --- | --- |
+| [システム概要書](docs/system-overview.md) | 全体構成、開発フロー、現状の制約 |
+| [テスト方針](docs/testing-policy.md) | どの層を何でテストするか、CI との対応 |
+| [バックエンドアーキテクチャ](docs/architecture/backend.md) | domain / usecase / infrastructure / presentation |
+| [フロントエンドアーキテクチャ](docs/architecture/frontend.md) | App Router + feature ベースの構成 |
+
 ## スタック
 
 | レイヤ | 技術 |
@@ -31,6 +40,7 @@ apps/api                     Go API
   internal/server            生成 IF の実装（StrictServerInterface）
   internal/todo              ドメイン / ストア（インメモリ）
 e2e                          Playwright テスト
+docs                         ドキュメント（docs/api は Redocly の生成物）
 Taskfile.yml                 task コマンドの入口
 taskfiles/app.yml            アプリ（web / api / e2e / docker）のタスク
 taskfiles/docs.yml           OpenAPI（Redocly）のタスク
@@ -84,13 +94,13 @@ task app:docker:build:web
 
 ```bash
 task docs:lint      # redocly lint（ルールは redocly.yaml）
-task docs:build     # redocly build-docs → docs/api.html
+task docs:build     # redocly build-docs → docs/api/api.html
 task docs:preview   # 生成した HTML を :4000 で配信
-task docs:bundle    # redocly bundle → docs/openapi.bundled.yaml
+task docs:bundle    # redocly bundle → docs/api/openapi.bundled.yaml
 task docs:stats     # redocly stats
 ```
 
-生成物（`docs/api.html`, `docs/openapi.bundled.yaml`）はコミットせず、CI の `docs` ジョブが artifact として出力する。
+生成物（`docs/api/`）はコミットせず、CI の `docs` ジョブが artifact として出力する。
 
 ## 仕様変更の流れ（spec-first）
 

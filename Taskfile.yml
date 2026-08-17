@@ -61,4 +61,4 @@ tasks:
   clean:
     desc: ビルド成果物を削除
     cmds:
-      - rm -rf apps/web/.next apps/web/storybook-static apps/api/bin apps/api/tmp docs/api.html docs/openapi.bundled.yaml e2e/playwright-report e2e/test-results
+      - rm -rf apps/web/.next apps/web/storybook-static apps/api/bin apps/api/tmp docs/api e2e/playwright-report e2e/test-results

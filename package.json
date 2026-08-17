@@ -18,7 +18,7 @@
     "build-storybook": "pnpm --filter web build-storybook",
     "e2e": "pnpm --filter e2e test",
     "docs:lint": "redocly lint",
-    "docs:build": "redocly build-docs openapi/openapi.yaml --output docs/api.html"
+    "docs:build": "redocly build-docs openapi/openapi.yaml --output docs/api/api.html"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.8",
