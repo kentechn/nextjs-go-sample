@@ -33,12 +33,15 @@ Next.js (SSR) + Go のモノレポ。HTTP の契約は `openapi/openapi.yaml` �
 ```
 openapi/openapi.yaml         API 仕様（単一の真実）
 apps/web                     Next.js アプリ
-  src/lib/api/schema.gen.ts  openapi-typescript の生成物
-  src/lib/api/client.ts      openapi-fetch の型付きクライアント
+  src/shared/api/schema.gen.ts  openapi-typescript の生成物
+  src/shared/api/client.ts      openapi-fetch の型付きクライアント
+  src/features/todos/           Todo 機能（UI / Server Action / API / Zod）
 apps/api                     Go API
   internal/openapi/api.gen.go  oapi-codegen の生成物（型 + サーバIF + 埋め込みspec）
-  internal/server            生成 IF の実装（StrictServerInterface）
-  internal/todo              ドメイン / ストア（インメモリ）
+  internal/domain            エンティティ / ドメインルール / Repository IF
+  internal/usecase           ユースケース（依存はインターフェースのみ）
+  internal/infrastructure    Repository の実装（現状はインメモリ）
+  internal/presentation/rest 生成 IF の実装 / ルータ / 変換
 e2e                          Playwright テスト
 docs                         ドキュメント（docs/api は Redocly の生成物）
 Taskfile.yml                 task コマンドの入口

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import type { FormState } from "@/app/actions";
+import type { FormState } from "../types";
 
 type TodoFormProps = {
   action: (state: FormState, formData: FormData) => Promise<FormState>;

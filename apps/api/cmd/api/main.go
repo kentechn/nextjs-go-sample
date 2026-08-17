@@ -1,9 +1,11 @@
-// Command api runs the HTTP API server.
+// Command api runs the HTTP API server. This file is the composition root: it
+// is the only place that picks concrete implementations and wires the layers.
 package main
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,8 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kentechn/nextjs-go-sample/apps/api/internal/server"
-	"github.com/kentechn/nextjs-go-sample/apps/api/internal/todo"
+	"github.com/kentechn/nextjs-go-sample/apps/api/internal/infrastructure/memory"
+	"github.com/kentechn/nextjs-go-sample/apps/api/internal/presentation/rest"
+	todousecase "github.com/kentechn/nextjs-go-sample/apps/api/internal/usecase/todo"
 )
 
 const (
@@ -34,11 +37,12 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	store := todo.NewStore()
-	store.Create("read the OpenAPI spec")
-	store.Create("run task dev")
+	todos := todousecase.New(memory.NewTodoRepository())
+	if err := seed(todos); err != nil {
+		return err
+	}
 
-	handler, err := server.NewRouter(server.New(store, version), server.Config{
+	handler, err := rest.NewRouter(rest.NewHandler(todos, version), rest.Config{
 		AllowedOrigins: splitAndTrim(env("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
 	})
 	if err != nil {
@@ -74,6 +78,17 @@ func run(logger *slog.Logger) error {
 
 		return httpServer.Shutdown(shutdownCtx)
 	}
+}
+
+// seed inserts sample todos so that the SSR page has something to render.
+func seed(todos *todousecase.UseCase) error {
+	for _, title := range []string{"read the OpenAPI spec", "run task dev"} {
+		if _, err := todos.Create(context.Background(), todousecase.CreateInput{Title: title}); err != nil {
+			return fmt.Errorf("seed todos: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func env(key, fallback string) string {

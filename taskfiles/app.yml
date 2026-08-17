@@ -47,9 +47,10 @@ tasks:
       - task: api:fmt
 
   test:
-    desc: 型チェック + Go テスト
+    desc: 型チェック + フロント単体テスト + Go テスト
     cmds:
       - task: web:typecheck
+      - task: web:test
       - task: api:test
 
   # --- web (Next.js) ---
@@ -68,6 +69,11 @@ tasks:
     desc: ビルド済みの Next.js を起動
     cmds:
       - pnpm --filter web start
+
+  web:test:
+    desc: Vitest でフロントの単体テスト
+    cmds:
+      - pnpm --filter web test
 
   web:gen:
     desc: openapi-typescript で API 型を生成

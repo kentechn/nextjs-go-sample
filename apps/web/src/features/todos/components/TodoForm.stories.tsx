@@ -4,7 +4,7 @@ import { expect, userEvent, within } from "storybook/test";
 import { TodoForm } from "./TodoForm";
 
 const meta = {
-  title: "todo/TodoForm",
+  title: "todos/TodoForm",
   component: TodoForm,
   parameters: { layout: "centered" },
   args: {

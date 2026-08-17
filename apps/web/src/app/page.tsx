@@ -1,7 +1,10 @@
-import { createTodoAction, deleteTodoAction } from "@/app/actions";
-import { TodoForm } from "@/components/todo/TodoForm";
-import { TodoList } from "@/components/todo/TodoList";
-import { fetchTodos } from "@/lib/api/todos";
+import {
+  createTodoAction,
+  deleteTodoAction,
+  fetchTodos,
+  TodoForm,
+  TodoList,
+} from "@/features/todos";
 
 // Rendered on every request (SSR) so the list always reflects the Go API.
 export const dynamic = "force-dynamic";

@@ -1,5 +1,6 @@
-import { apiClient } from "./client";
-import type { Todo, TodoStatus } from "./todo";
+import { apiClient } from "@/shared/api/client";
+
+import type { Todo, TodoStatus } from "./types";
 
 export async function fetchTodos(status: TodoStatus = "all"): Promise<Todo[]> {
   const { data, error } = await apiClient.GET("/todos", {

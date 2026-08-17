@@ -13,7 +13,7 @@
 | domain（エンティティ / 不変条件 / ドメインエラー） | ユニット | `go test` + testify | `internal/domain/<name>/*_test.go` |
 | usecase（手順 / 異常系） | ユニット（リポジトリはフェイク） | `go test` | `internal/usecase/<name>/*_test.go` |
 | infrastructure（リポジトリ実装） | ユニット / 結合 | `go test` | `internal/infrastructure/<driver>/*_test.go` |
-| presentation（HTTP・仕様検証・エラー形） | 結合 | `go test` + `httptest`（ルータ全体） | `internal/presentation/http/*_test.go` |
+| presentation（HTTP・仕様検証・エラー形） | 結合 | `go test` + `httptest`（ルータ全体） | `internal/presentation/rest/*_test.go` |
 | Zod スキーマ / feature のロジック | ユニット | Vitest | `apps/web/src/**/*.test.ts` |
 | UI コンポーネント | インタラクション / a11y | Storybook（`play` + addon-a11y） | `*.stories.tsx` |
 | 主要ユーザーフロー | E2E | Playwright | `e2e/tests/*.spec.ts` |

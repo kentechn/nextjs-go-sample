@@ -1,4 +1,4 @@
-package server_test
+package rest_test
 
 import (
 	"bytes"
@@ -9,17 +9,18 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/kentechn/nextjs-go-sample/apps/api/internal/infrastructure/memory"
 	"github.com/kentechn/nextjs-go-sample/apps/api/internal/openapi"
-	"github.com/kentechn/nextjs-go-sample/apps/api/internal/server"
-	"github.com/kentechn/nextjs-go-sample/apps/api/internal/todo"
+	"github.com/kentechn/nextjs-go-sample/apps/api/internal/presentation/rest"
+	todousecase "github.com/kentechn/nextjs-go-sample/apps/api/internal/usecase/todo"
 )
 
 func newTestHandler(t *testing.T) http.Handler {
 	t.Helper()
 
-	handler, err := server.NewRouter(
-		server.New(todo.NewStore(), "test"),
-		server.Config{AllowedOrigins: []string{"http://localhost:3000"}},
+	handler, err := rest.NewRouter(
+		rest.NewHandler(todousecase.New(memory.NewTodoRepository()), "test"),
+		rest.Config{AllowedOrigins: []string{"http://localhost:3000"}},
 	)
 	require.NoError(t, err)
 
@@ -96,4 +97,31 @@ func TestGetTodoNotFound(t *testing.T) {
 	newTestHandler(t).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 
 	require.Equal(t, http.StatusNotFound, rec.Code)
+
+	var body openapi.Error
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+	require.Equal(t, "not_found", body.Code)
+}
+
+func TestCreateThenDeleteTodo(t *testing.T) {
+	t.Parallel()
+
+	handler := newTestHandler(t)
+
+	createRec := httptest.NewRecorder()
+	createReq := httptest.NewRequest(http.MethodPost, "/todos", bytes.NewBufferString(`{"title":"delete me"}`))
+	createReq.Header.Set("Content-Type", "application/json")
+	handler.ServeHTTP(createRec, createReq)
+	require.Equal(t, http.StatusCreated, createRec.Code)
+
+	var created openapi.Todo
+	require.NoError(t, json.Unmarshal(createRec.Body.Bytes(), &created))
+
+	deleteRec := httptest.NewRecorder()
+	handler.ServeHTTP(deleteRec, httptest.NewRequest(http.MethodDelete, "/todos/"+created.Id.String(), nil))
+	require.Equal(t, http.StatusNoContent, deleteRec.Code)
+
+	getRec := httptest.NewRecorder()
+	handler.ServeHTTP(getRec, httptest.NewRequest(http.MethodGet, "/todos/"+created.Id.String(), nil))
+	require.Equal(t, http.StatusNotFound, getRec.Code)
 }

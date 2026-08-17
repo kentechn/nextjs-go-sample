@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-import type { components } from "./schema.gen";
-
-export type Todo = components["schemas"]["Todo"];
-export type TodoStatus = components["schemas"]["TodoStatus"];
-
 /**
  * Input validation for the create-todo form. The constraints mirror
  * CreateTodoRequest in openapi/openapi.yaml.

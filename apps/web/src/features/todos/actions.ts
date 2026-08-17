@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createTodoSchema } from "@/lib/api/todo";
-import { createTodo, deleteTodo } from "@/lib/api/todos";
-
-export type FormState = { error?: string };
+import { createTodo, deleteTodo } from "./api";
+import { createTodoSchema } from "./schema";
+import type { FormState } from "./types";
 
 export async function createTodoAction(_state: FormState, formData: FormData): Promise<FormState> {
   const parsed = createTodoSchema.safeParse({ title: formData.get("title") });
