@@ -33,7 +33,6 @@
 | --- | --- | --- | --- |
 | 未作成 | Open | 不可(404) | 不可（API なし） |
 | Open | 不可（同一 id は通常サーバ生成） | 終了 | 不可（API なし） |
-| Done | 不可（完了 API なし） | 終了 | 不可（API なし） |
 
 Done への遷移手段は未実装であり、Done 状態を作成する API は存在しない。
 
@@ -43,7 +42,7 @@ Done への遷移手段は未実装であり、Done 状態を作成する API �
 | TC-001 | V-01 | Todo を生成できる | 前後に空白を含む title で生成 | 保存値は trim 後の値 | unit | `apps/api/internal/domain/todo/todo_test.go::TestNewTrimsTitle` |
 | TC-002 | V-01 | Todo を生成できる | title を空文字で生成 | `ErrEmptyTitle` | unit | `apps/api/internal/domain/todo/todo_test.go::TestNewRejectsInvalidTitle`（empty） |
 | TC-003 | V-01 | Todo を生成できる | title を空白のみで生成 | `ErrEmptyTitle` | unit | `apps/api/internal/domain/todo/todo_test.go::TestNewRejectsInvalidTitle`（whitespace only） |
-| TC-004 | V-01 | Todo を生成できる | trim 後に非空となる title で生成 | 生成に成功する | unit | `apps/api/internal/domain/todo/todo_test.go::TestNewTrimsTitle` |
+| TC-004 | V-02 | Todo を生成できる | title を 1 rune で生成 | 生成に成功する | unit | 未カバー |
 | TC-005 | V-02 | Todo を生成できる | title を 200 rune のマルチバイト文字で生成 | 生成に成功する | unit | `apps/api/internal/domain/todo/todo_test.go::TestNewAcceptsMaxLengthTitle` |
 | TC-006 | V-02 | Todo を生成できる | title を 201 rune で生成 | `ErrTitleTooLong` | unit | `apps/api/internal/domain/todo/todo_test.go::TestNewRejectsInvalidTitle`（one rune too long） |
 | TC-007 | V-03 | usecase に生成関数を注入する | 固定 clock / ID で Todo を作成 | `createdAt` と `id` が固定値、`done=false` | unit | `apps/api/internal/usecase/todo/usecase_test.go::TestCreateUsesInjectedClockAndID` |
@@ -57,7 +56,7 @@ Done への遷移手段は未実装であり、Done 状態を作成する API �
 | TC-015 | V-05 | Todo が保存済み | id を指定して削除する | Todo が削除される | unit | `apps/api/internal/infrastructure/memory/todo_repository_test.go::TestDelete` |
 | TC-016 | V-09 | router が起動している | health endpoint を GET する | 正常応答を返す | integration | `apps/api/internal/presentation/rest/router_test.go::TestGetHealth` |
 | TC-017 | V-05,V-09 | router が起動している | create → list を実行する | 作成した Todo が一覧に現れる | integration | `apps/api/internal/presentation/rest/router_test.go::TestCreateThenListTodo` |
-| TC-018 | V-06 | router が起動している | 不正な body で create する | HTTP 400 `invalid_request` | integration | `apps/api/internal/presentation/rest/router_test.go::TestCreateTodoRejectsInvalidBody` |
+| TC-018 | V-06 | router が起動している | 不正な body で create する | HTTP 400（検証ミドルウェアが拒否。テストは status のみ検証し `invalid_request` の code は未検証） | integration | `apps/api/internal/presentation/rest/router_test.go::TestCreateTodoRejectsInvalidBody` |
 | TC-019 | V-06 | router が起動している | UUID 形式でない id を get する | ハンドラに到達せず HTTP 400 `invalid_request` | integration | `apps/api/internal/presentation/rest/router_test.go::TestGetTodoRejectsMalformedID` |
 | TC-020 | V-07 | 対象 id が未登録 | id を get する | HTTP 404 `not_found` | integration | `apps/api/internal/presentation/rest/router_test.go::TestGetTodoNotFound` |
 | TC-021 | V-05,V-07 | Todo を作成済み | create → delete を実行する | 削除でき、対象は取得できない | integration | `apps/api/internal/presentation/rest/router_test.go::TestCreateThenDeleteTodo` |
@@ -89,6 +88,7 @@ Done への遷移手段は未実装であり、Done 状態を作成する API �
 未カバーとして次を記録する。
 
 - `getTodo` 200 の結合テストが無い（作成→一覧、作成→削除→404 はある）。
+- title の 1 rune 下限境界が未検証。
 - `status=done` / `status=all` の HTTP レベル検証が無い。
 - BR-09 は infra のユニットのみで、HTTP 500 の形は未検証。
 - `deleteTodoAction` の `todoId` 非文字列時の no-op が未検証。

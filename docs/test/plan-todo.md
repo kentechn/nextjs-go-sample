@@ -13,13 +13,13 @@ Todo 機能の作成・一覧・取得・削除と、入力検証および主要
 ## 3. テストレベルとタイプ
 | レベル | 目的 | ツール | 担当 | 判断基準 |
 | --- | --- | --- | --- | --- |
-| ユニット（domain / usecase） | Todo の業務ルールと手順の回帰 | `docs/testing-policy.md` を参照 | 実装者 | BR-01〜BR-07 の正常系・異常系を下位で確認 |
-| インフラ（memory） | 保存、重複、並び順、削除の回帰 | `docs/testing-policy.md` を参照 | 実装者 | BR-06、BR-07、BR-09 をリポジトリで確認 |
-| 結合（presentation） | HTTP 契約、仕様検証、エラー形 | `docs/testing-policy.md` を参照 | 実装者 | operation ごとに代表ケースを確認。`getTodo` 成功と `status=all/done` は未カバー |
-| フロントユニット | Zod の trim、境界値、status | `docs/testing-policy.md` を参照 | 実装者 | title の 0 / 1 / 200 / 201 rune と `archived` を確認 |
-| コンポーネント | TodoForm / TodoList の状態と操作 | `docs/testing-policy.md` を参照 | 実装者 | Default、エラー、空、200 文字タイトルを確認 |
-| E2E | SSR、作成、削除、主要な入力エラー、health | `docs/testing-policy.md` を参照 | 実装者 | golden path とユーザーに見える失敗系を確認 |
-| 静的検査 | 仕様と生成物の同期 | `docs/testing-policy.md` を参照 | CI | コマンドと CI 対応は共通方針に従う |
+| ユニット（domain / usecase） | Todo の業務ルールと手順の回帰 | go test + testify | 実装者 | BR-01〜BR-07 の正常系・異常系を下位で確認 |
+| インフラ（memory） | 保存、重複、並び順、削除の回帰 | go test | 実装者 | BR-06、BR-07、BR-09 をリポジトリで確認 |
+| 結合（presentation） | HTTP 契約、仕様検証、エラー形 | go test + httptest（ルータ全体） | 実装者 | operation ごとに代表ケースを確認。`getTodo` 成功と `status=all/done` は未カバー |
+| フロントユニット | Zod の trim、境界値、status | Vitest | 実装者 | title の 0 / 1 / 200 / 201 rune と `archived` を確認 |
+| コンポーネント | TodoForm / TodoList の状態と操作 | Storybook（play + addon-a11y） | 実装者 | Default、エラー、空、200 文字タイトルを確認 |
+| E2E | SSR、作成、削除、主要な入力エラー、health | Playwright | 実装者 | golden path とユーザーに見える失敗系を確認 |
+| 静的検査 | 仕様と生成物の同期 | `task gen:check` / `task docs:lint` | CI | コマンドと CI 対応は共通方針に従う |
 
 完了 API が無いため Done 側の状態遷移は対象外とする。永続化も実装対象外のため、DB との整合性は検証しない。
 コマンドと CI ジョブの対応は `docs/testing-policy.md` を参照し、ここでは重複して記載しない。
