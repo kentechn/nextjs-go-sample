@@ -69,14 +69,20 @@ OpenAPI の operationId を列挙するだけにする（定義は複製しな�
 | `internal` | 500 | 同一 id の重複作成など、内部エラーが発生 | 共通エラー |
 
 ## 8. 非機能要件
-- データは `internal/infrastructure/memory` のインメモリ実装で保持し、プロセス再起動で消失する。
-- 起動時に `"read the OpenAPI spec"` / `"run task dev"` の 2 件を seed する。
-- ブラウザは Go API を直接呼ばず、必ずサーバ経由とする。`API_BASE_URL` はサーバ専用で、`NEXT_PUBLIC_` を付けない。
-- CORS はブラウザから直接叩いてデバッグする場合の保険とし、既定値は `http://localhost:3000` とする。
-- API の read/write timeout は 15s、graceful shutdown は 10s とする。
-- ログは slog の JSON とする。
+- 性能: ページは毎リクエスト SSR（`force-dynamic`）で、API 呼び出しは 1 リクエストにつき一覧取得 1 回に収める。
+- 可用性: API の read / write timeout は 15s、graceful shutdown は 10s とする。処理中のリクエストを打ち切らない。
+- セキュリティ: ブラウザは Go API を直接呼ばず、必ず Next.js のサーバ側（Server Component / Server Action）を経由する。`API_BASE_URL` はサーバ専用で `NEXT_PUBLIC_` を付けない。
+- 運用性: ログは slog の JSON で標準出力に出す。構造化ログとして収集できること。
+- 可観測性: `getHealth` を liveness probe として提供する。
 
-## 9. 前提と未決事項
+## 9. 前提・制約
+- 永続化はインメモリ実装（`internal/infrastructure/memory`）で、プロセス再起動でデータが消える。複数インスタンスに水平スケールできない（インスタンス間でデータを共有しない）。
+- 起動時に `"read the OpenAPI spec"` / `"run task dev"` の 2 件を seed する。開発・E2E の初期表示用であり、業務上の初期データではない。
+- CORS の許可オリジンは `CORS_ALLOWED_ORIGINS`（既定 `http://localhost:3000`）。ブラウザから API を直接叩いてデバッグする場合の保険で、通常の経路では使わない。
+- 認証・認可は無く、全 Todo が単一の共有リストとして見える。
+- 上記の制約は永続化（未決事項 2）と認証（未決事項 3）の対応で外れる。
+
+## 10. 未決事項
 | # | 論点 | 暫定 | 決定期限 |
 | --- | --- | --- | --- |
 | 1 | 完了操作（`PATCH /todos/{todoId}` 等） | 未実装 | 未定 |
@@ -84,7 +90,7 @@ OpenAPI の operationId を列挙するだけにする（定義は複製しな�
 | 3 | 認証・複数ユーザー | 未対応 | 未定 |
 | 4 | 一覧のページング | 未対応 | 未定 |
 
-## 10. 変更履歴
+## 11. 変更履歴
 | 日付 | 変更 | 対応 PR |
 | --- | --- | --- |
 | 2026-08-19 | 初版作成（既存実装からの追記） | PR #4 |
